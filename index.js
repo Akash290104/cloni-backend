@@ -14,7 +14,7 @@ const app = express();
 
 // Apply CORS middleware to allow requests from your frontend
 app.use(cors({
-  origin: "*", // Replace with your frontend URL
+  origin: "https://cloni-frontend.vercel.app", // Replace with your frontend URL
   credentials: true, // If you need to allow credentials (cookies, authorization headers, etc.)
 }));
 
@@ -35,7 +35,7 @@ connectDB()
     const io = new Server(server, {
       pingTimeout: 60000,
       cors: {
-        origin: "*", // Replace with your frontend URL
+        origin: "https://cloni-frontend.vercel.app", // Replace with your frontend URL
         methods: ["GET", "POST"],
         credentials: true,
       },
