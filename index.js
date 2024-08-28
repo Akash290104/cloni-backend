@@ -12,11 +12,16 @@ dotenv.config();
 
 const app = express();
 
-// Apply CORS middleware to allow requests from your frontend
-app.use(cors({
+// CORS configuration
+const corsOptions = {
   origin: "https://cloni-frontend.vercel.app", // Replace with your frontend URL
-  credentials: true, // If you need to allow credentials (cookies, authorization headers, etc.)
-}));
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -34,11 +39,7 @@ connectDB()
     // Initialize Socket.IO and attach it to the Express server
     const io = new Server(server, {
       pingTimeout: 60000,
-      cors: {
-        origin: "https://cloni-frontend.vercel.app", // Replace with your frontend URL
-        methods: ["GET", "POST"],
-        credentials: true,
-      },
+      cors: corsOptions, // Use the same CORS options here
     });
 
     // Socket.IO connection event
