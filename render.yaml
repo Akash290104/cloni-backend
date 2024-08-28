@@ -1,0 +1,29 @@
+services:
+  - name: chat-app-backend
+    type: web
+    env: node
+    plan: free
+    region: oregon
+    # Specify the Node.js version if needed (adjust the version as required)
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.1  # Replace with the desired Node.js version
+    buildCommand: npm install
+
+    startCommand: npm start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: URL
+        value: "mongodb+srv://mishraak801:github1234z@cluster0.yg2ui.mongodb.net/"
+      - key: PORT
+        value: 5000
+      - key: JWT_SECRET
+        value: "akash"
+      - key: CLOUDINARY_CLOUD_NAME
+        value: "deylzmzlz"
+      - key: CLOUDINARY_API_KEY
+        value: "754397578599833"
+      - key: CLOUDINARY_API_SECRET
+        value: "6avTxgOiyL_pPjKcRc5S78fr_PI"
+      # Add any other environment variables here
