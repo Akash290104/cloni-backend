@@ -35,7 +35,7 @@ connectDB()
     const io = new Server(server, {
       pingTimeout: 60000,
       cors: {
-        origin: "https://talk-a-tive-zoneeee.vercel.app", // Replace with your frontend URL
+        origin: "https://cloni-frontend.vercel.app/", // Replace with your frontend URL
         methods: ["GET", "POST"],
         credentials: true,
       },
