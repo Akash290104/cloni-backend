@@ -14,7 +14,7 @@ const app = express();
 
 // Apply CORS middleware to allow requests from your frontend
 app.use(cors({
-  origin: "https://talk-a-tive-zoneeee.vercel.app", // Replace with your frontend URL
+  origin: "https://cloni-frontend.vercel.app/", // Replace with your frontend URL
   credentials: true, // If you need to allow credentials (cookies, authorization headers, etc.)
 }));
 
