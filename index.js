@@ -12,6 +12,7 @@ dotenv.config();
 
 const app = express();
 
+
 // CORS configuration
 const corsOptions = {
   origin: "https://cloni-frontend-niszdu1nn-akashs-projects-6f1d4f45.vercel.app", // Replace with your frontend URL
