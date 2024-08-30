@@ -47,7 +47,7 @@ connectDB()
       console.log("Connected to socket.io", socket.id);
 
       socket.on("setup", (userData) => {
-        socket.join(userData.data.existingUser._id);
+        socket.join(userData.existingUser._id);
         socket.emit("connected");
       });
 
