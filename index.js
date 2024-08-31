@@ -15,7 +15,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: "https://cloni-frontend-niszdu1nn-akashs-projects-6f1d4f45.vercel.app", // Replace with your frontend URL
+  origin: "https://cloni-frontend-aomp5iuhj-akashs-projects-6f1d4f45.vercel.app", // Replace with your frontend URL
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
