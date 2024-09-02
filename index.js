@@ -40,7 +40,8 @@ connectDB()
     // Initialize Socket.IO and attach it to the Express server
     const io = new Server(server, {
       pingTimeout: 60000,
-      cors: corsOptions, // Use the same CORS options here
+      transports: ["websocket", "polling"],
+      cors: corsOptions // Use the same CORS options here
     });
 
     // Socket.IO connection event
