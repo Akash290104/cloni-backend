@@ -62,17 +62,23 @@ connectDB()
       socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
       socket.on("new message", (newMessageReceived) => {
-        let chat = newMessageReceived.chat;
+        console.log("newMessageReceived-000",newMessageReceived);
+        let chat = newMessageReceived.newMessage.chat;
+        console.log("chat_step-1",chat);
 
         if (!chat.users) {
           return console.log("chat.users not defined");
         }
 
+        console.log("chat_step_2")
+
         chat.users.forEach((user) => {
-          if (user._id === newMessageReceived.sender._id) return;
+          if (user._id === newMessageReceived.newMessage.sender._id) return;
+          console.log("")
           socket.in(user._id).emit("message received", newMessageReceived);
         });
       });
+      console.log("chat_step_3")
 
       socket.on("disconnect", () => {
         console.log("User disconnected", socket.id);
