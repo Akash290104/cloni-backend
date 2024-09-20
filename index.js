@@ -7,44 +7,48 @@ import chatRoutes from "./routes/chatRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import { Server } from "socket.io";
 
-// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 
-
-// CORS configuration
 const corsOptions = {
-  origin: ["https://cloni-frontend.vercel.app","http://localhost:3000"], // Replace with your frontend URL
+  origin: ["https://cloni-frontend.vercel.app", "http://localhost:3000"], 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  credentials: true,
 };
 
-// Apply CORS middleware
 app.use(cors(corsOptions));
-
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
-let server;
+app.use("/api/user", userRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/message", messageRoutes);
 
-// Connect to the database and start the server
+app.get("/", async (req, res) => {
+  try {
+    console.log("API is running successfully");
+    return res.status(200).json({ message: "API is running successfully" });
+  } catch (error) {
+    console.log("API run failure", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 connectDB()
   .then(() => {
-    server = app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Server is running at port ${PORT}`);
     });
 
-    // Initialize Socket.IO and attach it to the Express server
     const io = new Server(server, {
       pingTimeout: 60000,
       transports: ["websocket", "polling"],
-      cors: corsOptions // Use the same CORS options here
+      cors: corsOptions, 
     });
 
-    // Socket.IO connection event
     io.on("connection", (socket) => {
       console.log("Connected to socket.io", socket.id);
 
@@ -62,23 +66,17 @@ connectDB()
       socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
       socket.on("new message", (newMessageReceived) => {
-        console.log("newMessageReceived-000",newMessageReceived);
         let chat = newMessageReceived.newMessage.chat;
-        console.log("chat_step-1",chat);
 
         if (!chat.users) {
           return console.log("chat.users not defined");
         }
 
-        console.log("chat_step_2")
-
-        chat.users.forEach((user) => {
-          if (user._id === newMessageReceived.newMessage.sender._id) return;
-          console.log("")
+        chat?.users?.forEach((user) => {
+          if (user?._id === newMessageReceived?.newMessage?.sender?._id) return;
           socket.in(user._id).emit("message received", newMessageReceived);
         });
       });
-      console.log("chat_step_3")
 
       socket.on("disconnect", () => {
         console.log("User disconnected", socket.id);
@@ -88,26 +86,7 @@ connectDB()
         console.error("Socket error:", err.message);
       });
     });
-
   })
   .catch((error) => {
     console.error("Could not connect to MongoDB", error);
   });
-
-// Simple route to check if API is running
-app.get("/", async (req, res) => {
-  try {
-    console.log("API is running successfully");
-    return res.status(200).json({ message: "API is running successfully" });
-  } catch (error) {
-    console.log("API run failure", error);
-    return res.status(500).json({ message: error.message });
-  }
-});
-
-// Define your routes
-app.use("/api/user", userRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/message", messageRoutes);
-
-
