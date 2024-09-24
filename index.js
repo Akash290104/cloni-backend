@@ -12,7 +12,7 @@ dotenv.config();
 const app = express();
 
 const corsOptions = {
-  origin: ["https://cloni-frontend.vercel.app", "http://localhost:3000"], 
+  origin: ["https://cloni-frontend.vercel.app", "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -46,13 +46,15 @@ connectDB()
     const io = new Server(server, {
       pingTimeout: 60000,
       transports: ["websocket", "polling"],
-      cors: corsOptions, 
+      cors: corsOptions,
     });
 
     io.on("connection", (socket) => {
       console.log("Connected to socket.io", socket.id);
 
       socket.on("setup", (userData) => {
+        console.log(userData);
+
         socket.join(userData.existingUser._id);
         socket.emit("connected");
       });
