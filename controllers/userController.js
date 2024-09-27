@@ -43,7 +43,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   console.log("New user registered successfully");
 
-  const token = generateToken(existingUser._id);
+  const token = generateToken(createdUser._id);
   console.log("Token is ", token);
 
   return res
