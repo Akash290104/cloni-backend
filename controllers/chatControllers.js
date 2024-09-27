@@ -97,10 +97,11 @@ const createGroupChat = asyncHandler(async (req, res) => {
     return res.status(402).json({ message: "Please fill all the fields" });
   }
 
-  let users = JSON.parse(req.body.users);
+  // console.log(users);
+  let users = req.body.users;
 
-  req.user.isAdmin = true;
-  users.push(req.user);
+  let admin = req.user;
+  users.push(admin._id);
 
   if (users.length < 3) {
     return res
@@ -113,12 +114,14 @@ const createGroupChat = asyncHandler(async (req, res) => {
       chatName: req.body.name,
       users: users,
       isGroupChat: true,
-      groupAdmin: req.user._id,
+      groupAdmin: admin,
     });
 
     const fullGroupChat = await Chat.findById(groupChat._id)
       .populate("users", "-password")
       .populate("groupAdmin", "-password");
+
+    fullGroupChat.groupAdmin.isAdmin = true;
 
     // fullGroupChat.groupAdmin.isAdmin = true
 
