@@ -169,7 +169,7 @@ const renameGroup = asyncHandler(async (req, res) => {
         .json({ message: "Group chat renamed successfully", updatedChat });
     }
   } catch (error) {
-    console.log("Error renaming group chat");
+    console.log("Error renaming group chat", error);
     return res.status(500).json(error.message);
   }
 
