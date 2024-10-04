@@ -159,14 +159,16 @@ const renameGroup = asyncHandler(async (req, res) => {
         .json({ message: "Group chat could not be updated" });
     } else {
       console.log("Group renamed successfully");
-      
+
+      console.log(req.io);
+
       const chatUsers = updatedChat.users;
       chatUsers.forEach((user) => {
         req.io.in(user._id).emit("groupRenamed", updatedChat);
       });
 
       console.log("socket");
-      
+
       return res
         .status(200)
         .json({ message: "Group chat renamed successfully", updatedChat });
