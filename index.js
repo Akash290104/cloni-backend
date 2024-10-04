@@ -1,3 +1,5 @@
+// 
+
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -37,61 +39,68 @@ app.get("/", async (req, res) => {
   }
 });
 
+// Function to initialize Socket.IO
+const initializeSocket = (server) => {
+  const io = new Server(server, {
+    pingTimeout: 60000,
+    transports: ["websocket", "polling"],
+    cors: corsOptions,
+  });
+
+  io.on("connection", (socket) => {
+    console.log("Connected to socket.io", socket.id);
+
+    socket.on("setup", (userData) => {
+      console.log(userData);
+      socket.join(userData.existingUser._id);
+      socket.emit("connected");
+    });
+
+    socket.on("join chat", (room) => {
+      socket.join(room);
+      console.log("User joined room: " + room);
+    });
+
+    socket.on("typing", (room) => socket.in(room).emit("typing"));
+    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+
+    socket.on("new message", (newMessageReceived) => {
+      let chat = newMessageReceived.newMessage.chat;
+
+      if (!chat.users) {
+        return console.log("chat.users not defined");
+      }
+
+      chat?.users?.forEach((user) => {
+        if (user?._id === newMessageReceived?.newMessage?.sender?._id) return;
+        socket.in(user._id).emit("message received", newMessageReceived);
+      });
+    });
+
+    socket.on("disconnect", () => {
+      console.log("User disconnected", socket.id);
+    });
+
+    socket.on("error", (err) => {
+      console.error("Socket error:", err.message);
+    });
+  });
+
+  return io; // Return the io instance if needed elsewhere
+};
+
 connectDB()
   .then(() => {
     const server = app.listen(PORT, () => {
       console.log(`Server is running at port ${PORT}`);
     });
 
-    const io = new Server(server, {
-      pingTimeout: 60000,
-      transports: ["websocket", "polling"],
-      cors: corsOptions,
-    });
+    const io = initializeSocket(server); // Initialize socket with the server
 
+    // Attach the io instance to the req object
     app.use((req, res, next) => {
-      req.io = io;
+      req.io = io; // Attach the io instance to the request object
       next();
-    });
-
-    io.on("connection", (socket) => {
-      console.log("Connected to socket.io", socket.id);
-
-      socket.on("setup", (userData) => {
-        console.log(userData);
-
-        socket.join(userData.existingUser._id);
-        socket.emit("connected");
-      });
-
-      socket.on("join chat", (room) => {
-        socket.join(room);
-        console.log("User joined room: " + room);
-      });
-
-      socket.on("typing", (room) => socket.in(room).emit("typing"));
-      socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
-
-      socket.on("new message", (newMessageReceived) => {
-        let chat = newMessageReceived.newMessage.chat;
-
-        if (!chat.users) {
-          return console.log("chat.users not defined");
-        }
-
-        chat?.users?.forEach((user) => {
-          if (user?._id === newMessageReceived?.newMessage?.sender?._id) return;
-          socket.in(user._id).emit("message received", newMessageReceived);
-        });
-      });
-
-      socket.on("disconnect", () => {
-        console.log("User disconnected", socket.id);
-      });
-
-      socket.on("error", (err) => {
-        console.error("Socket error:", err.message);
-      });
     });
   })
   .catch((error) => {
