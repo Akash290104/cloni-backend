@@ -49,6 +49,11 @@ connectDB()
       cors: corsOptions,
     });
 
+    app.use((req, res, next) => {
+      req.io = io;
+      next();
+    });
+
     io.on("connection", (socket) => {
       console.log("Connected to socket.io", socket.id);
 
