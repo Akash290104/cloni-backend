@@ -164,6 +164,9 @@ const renameGroup = asyncHandler(async (req, res) => {
       chatUsers.forEach((user) => {
         req.io.in(user._id).emit("groupRenamed", updatedChat);
       });
+
+      console.log("socket");
+      
       return res
         .status(200)
         .json({ message: "Group chat renamed successfully", updatedChat });
