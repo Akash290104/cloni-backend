@@ -25,82 +25,80 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
-app.use("/api/user", userRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/message", messageRoutes);
-
-app.get("/", async (req, res) => {
-  try {
-    console.log("API is running successfully");
-    return res.status(200).json({ message: "API is running successfully" });
-  } catch (error) {
-    console.log("API run failure", error);
-    return res.status(500).json({ message: error.message });
-  }
-});
-
-// Function to initialize Socket.IO
-const initializeSocket = (server) => {
-  const io = new Server(server, {
-    pingTimeout: 60000,
-    transports: ["websocket", "polling"],
-    cors: corsOptions,
-  });
-
-  io.on("connection", (socket) => {
-    console.log("Connected to socket.io", socket.id);
-
-    socket.on("setup", (userData) => {
-      console.log(userData);
-      socket.join(userData.existingUser._id);
-      socket.emit("connected");
-    });
-
-    socket.on("join chat", (room) => {
-      socket.join(room);
-      console.log("User joined room: " + room);
-    });
-
-    socket.on("typing", (room) => socket.in(room).emit("typing"));
-    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
-
-    socket.on("new message", (newMessageReceived) => {
-      let chat = newMessageReceived.newMessage.chat;
-
-      if (!chat.users) {
-        return console.log("chat.users not defined");
-      }
-
-      chat?.users?.forEach((user) => {
-        if (user?._id === newMessageReceived?.newMessage?.sender?._id) return;
-        socket.in(user._id).emit("message received", newMessageReceived);
-      });
-    });
-
-    socket.on("disconnect", () => {
-      console.log("User disconnected", socket.id);
-    });
-
-    socket.on("error", (err) => {
-      console.error("Socket error:", err.message);
-    });
-  });
-
-  return io; // Return the io instance if needed elsewhere
-};
-
+// Connect to MongoDB
 connectDB()
   .then(() => {
     const server = app.listen(PORT, () => {
       console.log(`Server is running at port ${PORT}`);
     });
 
-    const io = initializeSocket(server); // Initialize socket with the server
+    // Initialize Socket.IO
+    const io = new Server(server, {
+      pingTimeout: 60000,
+      transports: ["websocket", "polling"],
+      cors: corsOptions,
+    });
 
-    // Attach the io instance to the req object
+    // Middleware to attach io instance to the request
     app.use((req, res, next) => {
-      req.io = io; // Attach the io instance to the request object
+      req.io = io;
       next();
+    });
+
+    // Socket.IO event handlers
+    io.on("connection", (socket) => {
+      console.log("Connected to socket.io", socket.id);
+
+      socket.on("setup", (userData) => {
+        console.log(userData);
+        socket.join(userData.existingUser._id);
+        socket.emit("connected");
+      });
+
+      socket.on("join chat", (room) => {
+        socket.join(room);
+        console.log("User joined room: " + room);
+      });
+
+      socket.on("typing", (room) => socket.in(room).emit("typing"));
+      socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+
+      socket.on("new message", (newMessageReceived) => {
+        let chat = newMessageReceived.newMessage.chat;
+
+        if (!chat.users) {
+          return console.log("chat.users not defined");
+        }
+
+        chat?.users?.forEach((user) => {
+          if (user?._id === newMessageReceived?.newMessage?.sender?._id) return;
+          socket.in(user._id).emit("message received", newMessageReceived);
+        });
+      });
+
+      socket.on("disconnect", () => {
+        console.log("User disconnected", socket.id);
+      });
+
+      socket.on("error", (err) => {
+        console.error("Socket error:", err.message);
+      });
+    });
+
+    // Route handlers
+    app.use("/api/user", userRoutes);
+    app.use("/api/chat", chatRoutes);
+    app.use("/api/message", messageRoutes);
+
+    // Health check endpoint
+    app.get("/", async (req, res) => {
+      try {
+        console.log("API is running successfully");
+        return res.status(200).json({ message: "API is running successfully" });
+      } catch (error) {
+        console.log("API run failure", error);
+        return res.status(500).json({ message: error.message });
+      }
     });
   })
   .catch((error) => {
